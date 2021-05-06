@@ -1,169 +1,127 @@
 #pragma once
 #include "stdio.h"
 #include <iostream>
+#include <vector>
 
-template <class T>
-class pair {
-	size_t key;
-	T value;
-};
+template <class S> 
+void Swap(S temp1, S temp2) {
+	S temp3 = temp1;
+	temp1 = temp2;
+	temp2 = temp3;
+}
 
 template <class T>
 class TableInterface {
 public:
-	virtual void insert(size_t key_, const T& elem) = 0;
-	virtual void erase(size_t key_) = 0;
-	virtual pair find(size_t key_) = 0;
+	virtual bool insert(size_t key_, const T& elem) = 0;
+	virtual bool erase(size_t key_) = 0;
+	virtual std::pair<size_t, T> find(size_t key_) = 0;
 	virtual size_t getsize() = 0;
 	virtual bool IsEmpty() = 0;
+	
 };
 
-
-
-/*
 template<class T, class CellType = std::pair<size_t, T>>
-class TableByArray: public TableInterface<T> {
+class TableByArray : public TableInterface<T> {
 protected:
-	std::vector<CellType> storage;
+	std::vector <std::pair<size_t, T> > data;
 	size_t size;
 public:
 
-	TableByArray() { 
-		storage = std::vector<CellType>();
+	TableByArray() {
+		data = std::vector<CellType>();
 		size = 0;
 	}
 
-	TableByArray(const TableByArray& tab) {
-		storage = tab.storage;
-		size = tab.size;
+	TableByArray(const TableByArray& table_) 
+	{
+		data = table_.data;
+		size = table_.size;
 	}
 
-	size_t getSize() override {
+	size_t getSize()
+	{
 		return size;
 	}
 
-	void clear() override {
-	    storage.clear();
+	void clear()
+	{
+		data.clear();
 		size = 0;
 	}
 
-	bool isEmpty() override {
+	bool isEmpty()
+	{
 		return (size == 0);
 	}
+
+	void push(size_t key_, T elem) {
+		std::pair<size_t, T> Pair = std::make_pair(key_, elem);
+		data.push_back(Pair);
+	}
+
 };
 
+
 template<class T>
-class OrderedTable: public TableByArray<T> {
+class UnorderedTable : public TableByArray<T> {
 public:
-	OrderedTable(): TableByArray() {};
-	OrderedTable(const TableByArray& tab): TableByArray(tab) {};
-	bool insert(size_t key, const T& elem) override {
-		bool successful_insert = false;
-		std::pair<size_t, T> pr = std::make_pair(key, elem);
-		if (!isEmpty())
-		{
-			auto low = std::lower_bound(storage.begin(), storage.end(), pr);
-			if (low != storage.end())
-			{
-				if (low->first != key) {
-					storage.insert(low, pr);
-					++size;
-					successful_insert = true;
-				}
+	UnorderedTable() : TableByArray() {};
+
+	UnorderedTable(const TableByArray& tab) : TableByArray(tab) {};
+
+	bool insert(size_t key, const T& elem){
+		bool successful_insertion = false;
+		
+		for (int i = 0; i < size; i++) {
+			if (data[i].first == key) 
+				throw "Trying to insert already existing key";
+			else {
+				std::pair<size_t, T> Pair = std::make_pair(key, elem);
+				data.push_back(Pair);
+				size++;
+				successful_insertion = true;
 			}
 		}
-		else {
-			storage.push_back(pr);
-			++size;
-			successful_insert = true;
-		}
-		return successful_insert;
+		
+		return successful_insertion;
 	}
-	bool erase(size_t key) {
+
+	bool erase(size_t key_) {
 		bool successful_deletion = false;
-		std::pair<size_t, T> pr = std::make_pair(key, T());
-		auto low = std::lower_bound(storage.begin(), storage.end(), pr);
-		if (low != storage.end())
-		{
-			if (low->first == key)
-			{
-				storage.erase(low);
-				--size;
+		for (int i = 0; i < size; i++) {
+			if (data[i].first == key_) {
+				Swap(data[i], data[size - 1]);
+				data.pop_back();
+				size--;
 				successful_deletion = true;
+				break;
 			}
 		}
 		return successful_deletion;
 	}
-	std::pair<size_t, T> find(size_t key) override {
-		std::pair<size_t, T> pr = std::make_pair(key, T());
-		std::pair<size_t, T> res;
-		auto low = std::lower_bound(storage.begin(), storage.end(), pr);
-		if (low != storage.end())
+
+	std::pair<size_t, T> find(size_t key) {
+		std::pair<size_t, T> temp = std::make_pair(key, T());
+		std::pair<size_t, T> res = std::make_pair(-1, T());
+		for (auto iter = data.begin(); iter != data.end(); iter++)
 		{
-			if (low->first == key) {
-				res = std::make_pair(key, low->second);
-			}
-			else
-				throw std::logic_error("Field with this key was not found");
+			if (iter->first == key) 
+				res = std::make_pair(key, iter->second);
 		}
+		if(res.first != -1)
+			return res;
 		else
-			throw std::logic_error("Field with this key was not found");
-		return res;
+			throw "Field with this key was not found";
+		
+	}
+
+	size_t getsize() { return size; };
+
+	bool IsEmpty() { return size == 0;  };
+
+	std::pair<size_t, T> get_pair(size_t index) {
+		return data[index];
 	}
 };
 
-template<class T>
-class UnorderedTable: public TableByArray<T> {
-private:
-    size_t get_index(size_t key) {
-		size_t index = -1;
-		for (size_t i = 0; i < size; ++i) {
-			if (storage[i].first == key) {
-				index = i;
-				break;
-			}
-		}
-		return index;	
-    }
-public:
-    UnorderedTable() : TableByArray() {};
-    UnorderedTable(const TableByArray& tab) : TableByArray(tab) {};
-	bool insert(size_t key, const T& elem) override {
-		bool successful_insert;
-		if (get_index(key) != -1)
-			successful_insert = false;
-		else {
-			storage.push_back(std::make_pair(key, elem));
-			++size;
-			successful_insert = true;
-		}
-		return successful_insert;
-	}
-    bool erase(size_t key) override {
-		bool successful_deletion = false;
-		for (size_t i = 0; i < size; ++i) {
-			if (storage[i].first == key) {
-				storage[i] = storage[size - 1];
-				storage.pop_back();
-				--size;
-				successful_deletion = true;
-				break;
-			}
-		}
-		return successful_deletion;
-	}
-	std::pair<size_t, T> find(size_t key) override {
-		bool successful_search = false;
-		std::pair<size_t, T> res;
-		for (size_t i = 0; i < size; ++i) {
-			if (storage[i].first == key) {
-				successful_search = true;
-				res = std::make_pair(key, storage[i].second);
-				break;
-			}
-		}
-		if (!successful_search)
-		    throw std::logic_error("Field with this key was not found");
-		return res;
-	}
-};*/
