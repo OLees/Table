@@ -1,5 +1,6 @@
 #pragma once
 #include "stdio.h"
+#include "fstream"
 #include <iostream>
 #include <vector>
 
@@ -18,7 +19,8 @@ public:
 	virtual std::pair<size_t, T> find(size_t key_) = 0;
 	virtual size_t getsize() = 0;
 	virtual bool IsEmpty() = 0;
-	
+	virtual void print() = 0;
+	virtual void fileprint() = 0;
 };
 
 template<class T, class CellType = std::pair<size_t, T>>
@@ -60,6 +62,20 @@ public:
 		data.push_back(Pair);
 	}
 
+	void print() {
+		for (auto& s : data) {
+			std::cout << "(" << s.first << ", " << s.second << ")" << std::endl;
+		}
+	}
+
+	void fileprint() {
+		std::ofstream file;
+		file.open("D:/Daniil/Univer/A&DS/file.csv");
+		for (auto& s : data) {
+			file << "(" << s.first << ", " << s.second << ")" << std::endl;
+		}
+		file.close();
+	}
 };
 
 
@@ -71,20 +87,16 @@ public:
 	UnorderedTable(const TableByArray& tab) : TableByArray(tab) {};
 
 	bool insert(size_t key, const T& elem){
-		bool successful_insertion = false;
-		
-		for (int i = 0; i < size; i++) {
-			if (data[i].first == key) 
+		for (auto& s : data) {
+			if (s.first == key)
 				throw "Trying to insert already existing key";
-			else {
-				std::pair<size_t, T> Pair = std::make_pair(key, elem);
-				data.push_back(Pair);
-				size++;
-				successful_insertion = true;
-			}
 		}
-		
-		return successful_insertion;
+	
+		std::pair<size_t, T> Pair = std::make_pair(key, elem);
+		data.push_back(Pair);
+		size++;
+
+		return true;
 	}
 
 	bool erase(size_t key_) {
@@ -119,9 +131,62 @@ public:
 	size_t getsize() { return size; };
 
 	bool IsEmpty() { return size == 0;  };
-
-	std::pair<size_t, T> get_pair(size_t index) {
-		return data[index];
-	}
 };
 
+template<class T>
+class OrderedTable : public TableByArray<T> {
+public:
+	OrderedTable() : TableByArray() {};
+
+	OrderedTable(const TableByArray& tab) : TableByArray(tab) {};
+
+	bool insert(size_t key, const T& elem) {
+		for (auto& s : data) {				
+			if (s.first == key)
+				throw "Trying to insert already existing key";
+		}
+		std::pair<size_t, T> Pair = std::make_pair(key, elem);
+		auto low = lower_bound(data.begin(), data.end(), Pair);	
+		data.insert(low, Pair);	
+		size++;
+		return true;
+	};
+
+	bool erase(size_t key_) {
+		bool successful_deletion = false;
+		int i = 0;
+		for (i; i < size; i++) {
+			if (data[i].first == key_) {
+				successful_deletion = true;
+				break;
+			}
+		}
+		if (successful_deletion) {
+			for (; i < size - 1; i++)
+				data[i] = data[i + 1];
+			data.pop_back();
+			size--;
+		}
+		else throw "Cant delete not existing element";	
+		
+		return successful_deletion;
+	};
+
+	std::pair<size_t, T> find(size_t key_) {
+		std::pair<size_t, T> temp = std::make_pair(key_, T());
+		std::pair<size_t, T> res = std::make_pair(-1, T());
+		for (auto iter = data.begin(); iter != data.end(); iter++)
+		{
+			if (iter->first == key_)
+				res = std::make_pair(key_, iter->second);
+		}
+		if (res.first != -1)
+			return res;
+		else
+			throw "Field with this key was not found";
+	};
+
+	size_t getsize() { return size; };
+
+	bool IsEmpty() { return size == 0; };
+};
