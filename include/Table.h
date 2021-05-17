@@ -173,7 +173,7 @@ public:
 	};
 
 	std::pair<size_t, T> find(size_t key_) {
-		std::pair<size_t, T> temp = std::make_pair(key_, T());
+		/*std::pair<size_t, T> temp = std::make_pair(key_, T());
 		std::pair<size_t, T> res = std::make_pair(-1, T());
 		for (auto iter = data.begin(); iter != data.end(); iter++)
 		{
@@ -184,9 +184,25 @@ public:
 			return res;
 		else
 			throw "Field with this key was not found";
+		*/
+		int left = -1, right = size, temp;
+		while (left < right - 1) {
+			temp = (left + right) / 2;
+			if (data[temp].first < key_)
+				left = temp;
+			else
+				right = temp;
+		}
+		if (data[right].first == key_) return data[right];
+		else throw "Field with this key was not found";
 	};
 
 	size_t getsize() { return size; };
 
 	bool IsEmpty() { return size == 0; };
 };
+
+
+
+
+
