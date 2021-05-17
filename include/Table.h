@@ -4,12 +4,6 @@
 #include <iostream>
 #include <vector>
 
-template <class S> 
-void Swap(S temp1, S temp2) {
-	S temp3 = temp1;
-	temp1 = temp2;
-	temp2 = temp3;
-}
 
 template <class T>
 class TableInterface {
@@ -103,7 +97,7 @@ public:
 		bool successful_deletion = false;
 		for (int i = 0; i < size; i++) {
 			if (data[i].first == key_) {
-				Swap(data[i], data[size - 1]);
+				std::swap(data[i], data[size - 1]);
 				data.pop_back();
 				size--;
 				successful_deletion = true;
@@ -114,17 +108,13 @@ public:
 	}
 
 	std::pair<size_t, T> find(size_t key) {
-		std::pair<size_t, T> temp = std::make_pair(key, T());
-		std::pair<size_t, T> res = std::make_pair(-1, T());
 		for (auto iter = data.begin(); iter != data.end(); iter++)
 		{
-			if (iter->first == key) 
-				res = std::make_pair(key, iter->second);
+			if (iter->first == key) {
+				return std::make_pair(key, iter->second);
+			}
 		}
-		if(res.first != -1)
-			return res;
-		else
-			throw "Field with this key was not found";
+		throw "Field with this key was not found";
 		
 	}
 
@@ -173,18 +163,6 @@ public:
 	};
 
 	std::pair<size_t, T> find(size_t key_) {
-		/*std::pair<size_t, T> temp = std::make_pair(key_, T());
-		std::pair<size_t, T> res = std::make_pair(-1, T());
-		for (auto iter = data.begin(); iter != data.end(); iter++)
-		{
-			if (iter->first == key_)
-				res = std::make_pair(key_, iter->second);
-		}
-		if (res.first != -1)
-			return res;
-		else
-			throw "Field with this key was not found";
-		*/
 		int left = -1, right = size, temp;
 		while (left < right - 1) {
 			temp = (left + right) / 2;
