@@ -1,6 +1,8 @@
 #include "stdio.h"
 #include "Table.h"
 #include "iostream"
+#include <string>
+#include <vector>
 
 #include <gtest.h>
 
@@ -109,4 +111,63 @@ TEST(OrderedTable, can_delete_and_insert_consistently) {
 }
 
 
+TEST(HashTable, can_create_empty_class) {
+	ASSERT_NO_THROW(HashTable<int> Tab);
+}
 
+TEST(HashTable, can_insert_1) {
+	HashTable<double> Tab;
+	ASSERT_NO_THROW(Tab.insert(1.6));
+}
+
+TEST(HashTable, can_insert_2) {
+	HashTable<int> Tab;
+	ASSERT_NO_THROW(Tab.insert(55));
+}
+
+TEST(HashTable, can_insert_3) {
+	HashTable<int> Tab;
+	Tab.insert(55);
+	Tab.insert(55);
+	ASSERT_NO_THROW(Tab.insert(55));
+}
+
+TEST(HashTable, can_find_1) {
+	HashTable<int> Tab;
+	Tab.insert(3);
+	Tab.insert(1);
+	Tab.insert(3);
+	Tab.insert(1);
+
+	EXPECT_EQ(Tab.find(3), true);
+}
+
+TEST(HashTable, can_find_2) {
+	HashTable<int> Tab;
+	Tab.insert(3);
+	Tab.insert(1);
+	Tab.insert(3);
+	Tab.insert(1);
+
+	EXPECT_EQ(Tab.find(2), false);
+}
+
+TEST(HashTable, can_erase_1) {
+	HashTable<int> Tab;
+	Tab.insert(3);
+	Tab.insert(1);
+	Tab.insert(3);
+	Tab.insert(1);
+
+	EXPECT_EQ(Tab.erase(3), true);
+}
+
+TEST(HashTable, can_erase_2) {
+	HashTable<int> Tab;
+	Tab.insert(3);
+	Tab.insert(1);
+	Tab.insert(3);
+	Tab.insert(1);
+
+	EXPECT_EQ(Tab.erase(2), false);
+}
