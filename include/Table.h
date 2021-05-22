@@ -15,7 +15,7 @@ public:
 	virtual size_t getsize() = 0;
 	virtual bool IsEmpty() = 0;
 	virtual void print() = 0;
-	virtual void fileprint() = 0;
+	virtual void fileprint() = 0; //проверка функции
 };
 
 template<class T, class CellType = std::pair<size_t, T>>
